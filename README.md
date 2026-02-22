@@ -51,19 +51,6 @@ Key characteristics:
 
 ---
 
-## Project Structure
-
-```
-apb_project/
-├── APB_Master.v       # APB Master FSM
-├── APB_Slave.v        # APB Slave with cache memory
-├── APB_Wrapper.v      # Top-level integration module
-├── APB_tb.v           # Self-checking testbench (Xilinx Vivado)
-└── README.md          # This file
-```
-
----
-
 ## Module Descriptions
 
 ### APB\_Master
@@ -228,53 +215,6 @@ The complete APB bus signals between master and slave:
 
 ---
 
-## APB Transfer Timing
-
-### Single Write Transfer
-
-```
-         ____      ____      ____      ____
-PCLK  __|    |____|    |____|    |____|    |____
-
-         IDLE      SETUP     ACCESS    IDLE
-State  ──────────────────────────────────────
-
-PSEL   ___________|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|________
-
-PENABLE____________|_______________|‾‾|________
-
-PWRITE_____________|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|_______
-
-PADDR  ____________|===ADDR==========|________
-
-PWDATA_____________|===DATA==========|________
-
-PREADY___________________________|‾‾|__________
-```
-
-### Single Read Transfer
-
-```
-         ____      ____      ____      ____
-PCLK  __|    |____|    |____|    |____|    |____
-
-         IDLE      SETUP     ACCESS    IDLE
-State  ──────────────────────────────────────
-
-PSEL   ___________|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|________
-
-PENABLE____________|_______________|‾‾|________
-
-PWRITE ___________|__________________|________
-       (stays 0)
-
-PREADY___________________________|‾‾|__________
-
-PRDATA ___________________________|==DATA==|___
-```
-
----
-
 ## PSTRB Behavior
 
 `PSTRB` is a 4-bit signal where each bit enables one byte lane of the 32-bit data bus. It **must be 0 during read transfers**.
@@ -290,60 +230,6 @@ PRDATA ___________________________|==DATA==|___
 | `4'b1111` | All bytes (full word) | Full 32-bit write, no modification |
 | `4'b0000` on write | None | Stores `32'h00000000` (default case) |
 | Any non-zero on **read** | — | `PSLVERR` asserted by slave |
-
----
-
-## How to Run in Xilinx Vivado
-
-### Step 1 — Create a new project
-
-1. Open **Vivado** → `Create Project`
-2. Choose **RTL Project**, uncheck "Create block design"
-3. Set target device (any — this is pure RTL, device-independent)
-
-### Step 2 — Add source files
-
-Go to `File → Add Sources → Add or Create Design Sources` and add:
-
-```
-APB_Master.v
-APB_Slave.v
-APB_Wrapper.v
-```
-
-Then go to `File → Add Sources → Add or Create Simulation Sources` and add:
-
-```
-APB_tb.v
-```
-
-### Step 3 — Set simulation top
-
-In the **Sources** panel, right-click `APB_tb` under Simulation Sources and select:
-> **Set as Top**
-
-### Step 4 — Run simulation
-
-Go to `Flow → Run Simulation → Run Behavioral Simulation`
-
-### Step 5 — View results
-
-- **Console/Tcl window** — shows `$monitor` trace and the PASS/FAIL summary
-- **Waveform window** — add signals from the scope panel on the left
-  - Recommended signals to add: `PCLK`, `PRESETn`, `PSEL`, `PENABLE`, `PWRITE`, `PADDR`, `PWDATA`, `PRDATA`, `PSTRB`, `PREADY`, `PSLVERR`
-
-### Expected Console Output (end of simulation)
-
-```
-============================================
-  SIMULATION COMPLETE
-  Total Tests : 14
-  PASSED      : 14
-  FAILED      : 0
-============================================
-
-  *** ALL TESTS PASSED ***
-```
 
 ---
 
